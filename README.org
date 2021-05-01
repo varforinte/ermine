@@ -1,0 +1,88 @@
+
+Edit and Run Maya scripts IN Emacs
+
+- Evaluates all or part of an Emacs buffer containing MEL or Python in
+  [[https://en.wikipedia.org/wiki/Autodesk_Maya][Maya]]. An alternative to the Maya Script Editor.
+- Provides a prompt in a separate buffer for one-line commands.
+- Sends the output from Maya back to the Emacs buffer.
+
+Tested with Maya 2018 on Linux.
+
+* Installation
+
+  Clone the repo somewhere, e.g.
+
+  #+BEGIN_SRC sh
+    cd ~/dev
+    git clone https://github.com/kaffekopp2/ermine.git
+  #+END_SRC
+
+** Maya installation
+
+  Add =~/dev/ermine/maya= (or wherever you cloned the repo) to the
+  =MAYA_MODULE_PATH=.
+
+  This can either be done from the [[https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2018/ENU/Maya-EnvVar/files/GUID-8EFB1AC1-ED7D-4099-9EEE-624097872C04-htm.html][Maya.env]] in
+  =$MAYA_APP_DIR/<version>/Maya.env=
+
+  #+BEGIN_EXAMPLE
+  MAYA_MODULE_PATH=/home/YOUR_USER/dev/ermine/maya
+  #+END_EXAMPLE
+
+  Or via the shell:
+
+  #+BEGIN_SRC sh
+  env MAYA_MODULE_PATH=$HOME/dev/ermine/maya maya2018
+  #+END_SRC
+
+  When you run maya in GUI mode the server will start from a
+  background thread, waiting for Emacs to connect on port 8666. It's
+  not started in batch mode.
+
+** Emacs installation
+
+  Add this to your [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Init-File.html][init.el]] changing the ~load-path~ to wherever you
+  cloned the repo.
+
+  #+BEGIN_SRC emacs-lisp
+    (add-to-list 'load-path "~/dev/ermine/emacs")
+    (require 'ermine)
+  #+END_SRC
+
+  You may have to set =python-shell-interpreter= if the python
+  interpreter on your system is not the default, e.g. on Ubuntu 20:
+
+  #+BEGIN_SRC emacs-lisp
+    (setq-default python-shell-interpreter "python3")
+  #+END_SRC
+
+* How to use
+
+  - Run maya
+  - For MEL:
+    - Optionally open a =.mel= file in Emacs
+    - Run =M-x ermine-mel-connect= to get a MEL prompt in the other
+      window connected to maya.
+  - For Python:
+    - Optionally open a =.py= file in Emacs
+    - Run =M-x ermine-python-connect= to get a Python prompt in the
+      other window connected to maya.
+
+** Key bindings
+
+  In the MEL/Python file:
+
+    - =C-c C-c= Sends the entire buffer to maya
+    - =C-c C-r= Sends the region
+    - =C-c C-e= Sends the statement _before_ the point
+    - =C-M-x= Sends the function/procedure the point is within
+
+  In the prompt buffer, the usual Emacs comint keys work, e.g.
+
+    - =C-c C-r= Scroll to the start of the output of the previous command
+    - =C-c C-e= Scroll to end
+    - =C-c C-o= Clear output of previous command
+    - =C-c C-l= Clear buffer
+    - =M-r= Reverse history search
+    - =C-d= End input to the prompt. You can then kill the buffer, or
+      reconnect it to maya (which keeps the command history).
